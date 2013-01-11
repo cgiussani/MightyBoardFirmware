@@ -49,6 +49,7 @@
 #define HOST_CMD_GET_BUFFER_SIZE 2
 #define HOST_CMD_CLEAR_BUFFER    3
 #define HOST_CMD_GET_POSITION    4
+#define HOST_CMD_CMP_FILE_TO_MEMFILE 5
 #define HOST_CMD_ABORT           7
 #define HOST_CMD_PAUSE           8
 #define HOST_CMD_PROBE           9

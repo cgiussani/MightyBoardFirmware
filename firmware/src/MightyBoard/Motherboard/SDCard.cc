@@ -333,6 +333,25 @@ void finishPlayback() {
   file = 0;
 }
 
+//Modified startPlayback for RevH SD testing, does not set playing
+SdErrorCode startFileRead(char* filename) {
+
+  reset();
+  SdErrorCode result = initCard();
+  /* for playback it's ok if the card is locked */
+  if (result != SD_SUCCESS && result != SD_ERR_CARD_LOCKED) {
+    return result;
+  }
+
+  file = 0;
+  if (!openFile(filename, &file) || file == 0) {
+    return SD_ERR_FILE_NOT_FOUND;
+  }
+  open_fileSize = fat_get_file_size(file);
+  //fetchNextByte();
+  return SD_SUCCESS;
+
+}
 
 void reset() {
 	if (playing)

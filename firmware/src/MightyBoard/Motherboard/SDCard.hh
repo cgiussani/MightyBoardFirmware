@@ -114,6 +114,9 @@ namespace sdcard {
     /// Check if there was an error with the last read and we should retry
     uint32_t getFileSize();
 
+    //Modified startPlayback, does not set to playing.
+    SdErrorCode startFileRead(char* filename);
+
 } // namespace sdcard
 
 #endif // SDCARD_HH_

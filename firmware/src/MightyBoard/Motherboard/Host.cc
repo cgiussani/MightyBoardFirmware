@@ -39,6 +39,8 @@
 #include "stdio.h"
 #include "Menu_locales.hh"
 
+#include "RevH_SD_test.hh"
+
 namespace host {
 
 /// Identify a command packet, and process it.  If the packet is a command
@@ -368,7 +370,7 @@ void handlePlayback(const InPacket& from_host, OutPacket& to_host) {
 	to_host.append8(response);
 }
 
-    // retrive SD file names
+// retrieve SD file names
 void handleNextFilename(const InPacket& from_host, OutPacket& to_host) {
 	to_host.append8(RC_OK);
 	uint8_t resetFlag = from_host.read8(1);
@@ -394,6 +396,23 @@ void handleNextFilename(const InPacket& from_host, OutPacket& to_host) {
 		to_host.append8(fnbuf[idx]);
 	}
 	to_host.append8(0);
+}
+
+void handleCmp_SdFile_to_MemFile(const InPacket& from_host, OutPacket& to_host) {
+	//Calls the Sd_testing comparison of a file on the SD to a file in PROGMEM; returns the value
+	//either 0 or 255. if return value is -1 it does nothing.
+	uint8_t returnVal;
+
+	to_host.append8(RC_OK);
+
+	char *filename = (char*)from_host.getData() + 1;
+
+	returnVal = cmp_SdFile_to_MemFile(filename);
+
+	if(returnVal == -1) return;
+	else{
+		to_host.append8(returnVal);
+	}
 }
 
     // pause command response
@@ -597,6 +616,9 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 			case HOST_CMD_NEXT_FILENAME:
 				handleNextFilename(from_host,to_host);
 				return true;
+//WDC
+			case HOST_CMD_CMP_FILE_TO_MEMFILE:
+				handleCmp_SdFile_to_MemFile(from_host, to_host);
 			case HOST_CMD_PAUSE:
 				handlePause(from_host,to_host);
 				return true;

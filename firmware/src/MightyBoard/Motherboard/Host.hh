@@ -23,6 +23,8 @@
 #include "CircularBuffer.hh"
 #include "Command.hh"
 
+
+
 // TODO: Make this a class.
 /// Functions in the host namespace deal with communications to the host
 /// computer. The host also implents a simple state machine, because it is
@@ -109,6 +111,9 @@ void activePauseBuild(bool pause, command::SleepType type);
 
 /// stop onboard process (not a build)
 void stopProcess();
+
+//compare file on SD to static file in PROGMEM (For RevH testing)
+void handleCmp_SdFile_to_MemFile(const InPacket& from_host, OutPacket& to_host);
 
 }
 
