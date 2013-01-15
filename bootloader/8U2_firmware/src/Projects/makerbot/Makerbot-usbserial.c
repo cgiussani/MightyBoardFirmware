@@ -92,50 +92,52 @@ int main(void)
 
 	for (;;)
 	{
-		/* Only try to read in bytes from the CDC interface if the transmit buffer is not full */
-		if (!(RingBuffer_IsFull(&USBtoUSART_Buffer)))
-		{
-			int16_t ReceivedByte = CDC_Device_ReceiveByte(&VirtualSerial_CDC_Interface);
+		if(USB_IsInitialized){
+			/* Only try to read in bytes from the CDC interface if the transmit buffer is not full */
+			if (!(RingBuffer_IsFull(&USBtoUSART_Buffer)))
+			{
+				int16_t ReceivedByte = CDC_Device_ReceiveByte(&VirtualSerial_CDC_Interface);
 
-			/* Read bytes from the USB OUT endpoint into the USART transmit buffer */
-			if (!(ReceivedByte < 0))
-			  RingBuffer_Insert(&USBtoUSART_Buffer, ReceivedByte);
-		}
-		
-		/* Check if the UART receive buffer flush timer has expired or the buffer is nearly full */
-		RingBuff_Count_t BufferCount = RingBuffer_GetCount(&USARTtoUSB_Buffer);
-		if ((TIFR0 & (1 << TOV0)) || (BufferCount > BUFFER_NEARLY_FULL))
-		{
-			TIFR0 |= (1 << TOV0);
-
-			if (USARTtoUSB_Buffer.Count) {
-				LEDs_TurnOnLEDs(LEDMASK_TX);
-				PulseMSRemaining.TxLEDPulse = TX_RX_LED_PULSE_MS;
+				/* Read bytes from the USB OUT endpoint into the USART transmit buffer */
+				if (!(ReceivedByte < 0))
+				  RingBuffer_Insert(&USBtoUSART_Buffer, ReceivedByte);
 			}
-
-			/* Read bytes from the USART receive buffer into the USB IN endpoint */
-			while (BufferCount--)
-			  CDC_Device_SendByte(&VirtualSerial_CDC_Interface, RingBuffer_Remove(&USARTtoUSB_Buffer));
-			  
-			/* Turn off TX LED(s) once the TX pulse period has elapsed */
-			if (PulseMSRemaining.TxLEDPulse && !(--PulseMSRemaining.TxLEDPulse))
-			  LEDs_TurnOffLEDs(LEDMASK_TX);
-
-			/* Turn off RX LED(s) once the RX pulse period has elapsed */
-			if (PulseMSRemaining.RxLEDPulse && !(--PulseMSRemaining.RxLEDPulse))
-			  LEDs_TurnOffLEDs(LEDMASK_RX);
-		}
 		
-		/* Load the next byte from the USART transmit buffer into the USART */
-		if (!(RingBuffer_IsEmpty(&USBtoUSART_Buffer))) {
-		  Serial_TxByte(RingBuffer_Remove(&USBtoUSART_Buffer));
-		  	
-		  	LEDs_TurnOnLEDs(LEDMASK_RX);
-			PulseMSRemaining.RxLEDPulse = TX_RX_LED_PULSE_MS;
-		}
+			/* Check if the UART receive buffer flush timer has expired or the buffer is nearly full */
+			RingBuff_Count_t BufferCount = RingBuffer_GetCount(&USARTtoUSB_Buffer);
+			if ((TIFR0 & (1 << TOV0)) || (BufferCount > BUFFER_NEARLY_FULL))
+			{
+				TIFR0 |= (1 << TOV0);
+
+				if (USARTtoUSB_Buffer.Count) {
+					LEDs_TurnOnLEDs(LEDMASK_TX);
+					PulseMSRemaining.TxLEDPulse = TX_RX_LED_PULSE_MS;
+				}
+
+				/* Read bytes from the USART receive buffer into the USB IN endpoint */
+				while (BufferCount--)
+				  CDC_Device_SendByte(&VirtualSerial_CDC_Interface, RingBuffer_Remove(&USARTtoUSB_Buffer));
+				  
+				/* Turn off TX LED(s) once the TX pulse period has elapsed */
+				if (PulseMSRemaining.TxLEDPulse && !(--PulseMSRemaining.TxLEDPulse))
+				  LEDs_TurnOffLEDs(LEDMASK_TX);
+
+				/* Turn off RX LED(s) once the RX pulse period has elapsed */
+				if (PulseMSRemaining.RxLEDPulse && !(--PulseMSRemaining.RxLEDPulse))
+				  LEDs_TurnOffLEDs(LEDMASK_RX);
+			}
 		
-		CDC_Device_USBTask(&VirtualSerial_CDC_Interface);
-		USB_USBTask();
+			/* Load the next byte from the USART transmit buffer into the USART */
+			if (!(RingBuffer_IsEmpty(&USBtoUSART_Buffer))) {
+			  Serial_TxByte(RingBuffer_Remove(&USBtoUSART_Buffer));
+			  	
+			  	LEDs_TurnOnLEDs(LEDMASK_RX);
+				PulseMSRemaining.RxLEDPulse = TX_RX_LED_PULSE_MS;
+			}
+		
+			CDC_Device_USBTask(&VirtualSerial_CDC_Interface);
+			USB_USBTask();
+		}
 	}
 }
 
@@ -149,7 +151,7 @@ void SetupHardware(void)
 	/* Hardware Initialization */
 	Serial_Init(115200, false);
 	LEDs_Init();
-	USB_Init();
+	//USB_Init();
 
 	/* Start the flush timer so that overflows occur rapidly to push received bytes to the USB interface */
 	TCCR0B = (1 << CS02);
@@ -158,6 +160,16 @@ void SetupHardware(void)
 	AVR_RESET_LINE_PORT |= AVR_RESET_LINE_MASK;
 	AVR_RESET_LINE_DDR  |= AVR_RESET_LINE_MASK;
   
+}
+
+void EVENT_USB_Device_Connect(void)
+{
+	USB_Init();
+}
+
+void EVENT_USB_Device_Disconnect(void)
+{
+	USB_Shutdown();
 }
 
 /** Event handler for the library USB Configuration Changed event. */
