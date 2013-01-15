@@ -92,7 +92,13 @@ int main(void)
 
 	for (;;)
 	{
-		if(USB_IsInitialized){
+		if(bit_is_set(PINB, 5))
+		{
+			
+			USB_Init();
+		}
+		while(USB_IsInitialized)
+		{
 			/* Only try to read in bytes from the CDC interface if the transmit buffer is not full */
 			if (!(RingBuffer_IsFull(&USBtoUSART_Buffer)))
 			{
@@ -137,6 +143,11 @@ int main(void)
 		
 			CDC_Device_USBTask(&VirtualSerial_CDC_Interface);
 			USB_USBTask();
+
+			if(bit_is_clear(PINB, 5))
+			{
+				USB_ShutDown();
+			}
 		}
 	}
 }
@@ -159,17 +170,9 @@ void SetupHardware(void)
 	/* Pull target /RESET line high */
 	AVR_RESET_LINE_PORT |= AVR_RESET_LINE_MASK;
 	AVR_RESET_LINE_DDR  |= AVR_RESET_LINE_MASK;
+
+	DDRB &= ~(1 << PB5);
   
-}
-
-void EVENT_USB_Device_Connect(void)
-{
-	USB_Init();
-}
-
-void EVENT_USB_Device_Disconnect(void)
-{
-	USB_Shutdown();
 }
 
 /** Event handler for the library USB Configuration Changed event. */
