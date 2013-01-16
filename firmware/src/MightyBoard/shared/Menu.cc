@@ -2899,15 +2899,18 @@ void InfoMenu::handleSelect(uint8_t index) {
     }
 }
 
+uint8_t sd_clock_val = SD8_MHz;
+
 
 SettingsMenu::SettingsMenu() {
-  itemCount = 9;
+  itemCount = 10;
   reset();
   for (uint8_t i = 0; i < itemCount; i++){
     counter_item[i] = 0;
   }
   counter_item[1] = 1;
   counter_item[3] = 1;
+  counter_item[8] = 1;
 }
 
 void SettingsMenu::resetState(){
@@ -3021,8 +3024,35 @@ void SettingsMenu::drawItem(uint8_t index, LiquidCrystalSerial& lcd, uint8_t lin
       else
           lcd.writeFromPgmspace(OFF_MSG);
       break;
-    case 8:
+    case 9:
       lcd.writeFromPgmspace(EXIT_MSG);
+      break;
+	case 8:
+	  lcd.writeFromPgmspace(SD_CARD_CLOCK_MSG);
+      lcd.setCursor(11,line_number);
+      if(selectIndex == 8)
+         lcd.writeFromPgmspace(ARROW_MSG);
+      else
+        lcd.writeFromPgmspace(NO_ARROW_MSG);
+        lcd.setCursor(14,line_number);
+      lcd.setCursor(14,line_number);
+      switch(sd_clock_val){
+        case SD8_MHz:
+            lcd.writeFromPgmspace(SD_CLOCK_8_MSG);
+            break;
+        case SD4_MHz:
+            lcd.writeFromPgmspace(SD_CLOCK_4_MSG);
+            break;
+        case SD2_MHz:
+            lcd.writeFromPgmspace(SD_CLOCK_2_MSG);
+            break;
+        case SD1_MHz:
+            lcd.writeFromPgmspace(SD_CLOCK_1_MSG);
+            break;
+        case SD500_kHz:
+            lcd.writeFromPgmspace(SD_CLOCK_500_MSG);
+            break;
+      }
       break;
   }
 }
@@ -3061,6 +3091,19 @@ void SettingsMenu::handleCounterUpdate(uint8_t index, bool up){
         ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
           eeprom_write_byte((uint8_t*)eeprom_offsets::HEATER_TIMEOUT_ON_CANCEL, heaterTimeout);
         }
+        break;
+	  case 8:
+        // update left counter
+        if(up)
+            sd_clock_val++;
+        else
+            sd_clock_val--;
+        // keep within appropriate boundaries
+        if(sd_clock_val < SD500_kHz)
+          sd_clock_val = SD8_MHz;
+        else if(sd_clock_val > SD8_MHz)
+          sd_clock_val = SD500_kHz;
+      
         break;
     }
     
@@ -3133,9 +3176,12 @@ void SettingsMenu::handleSelect(uint8_t index) {
       Motherboard::getBoard().getPlatformHeater().disable(!HBPPresent);
       lineUpdate = 1;
       break;
-    case 8:
+    case 9:
       interface::popScreen();
       break;
+	case 8:
+	  sdcard::changeSDClock((SDClockVals)sd_clock_val);
+	  break;
     }
 }
 
