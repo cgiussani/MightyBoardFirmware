@@ -37,10 +37,10 @@ void DigiPots::init(const uint8_t idx) {
 
 void DigiPots::resetPots()
 {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Winline"
+//#pragma GCC diagnostic push
+//#pragma GCC diagnostic ignored "-Winline"
     SoftI2cManager i2cPots = SoftI2cManager::getI2cManager();
-#pragma GCC diagnostic pop
+//#pragma GCC diagnostic pop
     i2cPots.start(0b01011110 | I2C_WRITE, pot_pin);
     potValue = eeprom::getEeprom8(eeprom_base + eeprom_pot_offset, 0);
     i2cPots.write(potValue, pot_pin);
@@ -49,10 +49,10 @@ void DigiPots::resetPots()
 
 void DigiPots::setPotValue(const uint8_t val)
 {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Winline"
+//#pragma GCC diagnostic push
+//#pragma GCC diagnostic ignored "-Winline"
     SoftI2cManager i2cPots = SoftI2cManager::getI2cManager();
-#pragma GCC diagnostic pop
+//#pragma GCC diagnostic pop
     i2cPots.start(0b01011110 | I2C_WRITE, pot_pin);
     potValue = val > DIGI_POT_MAX ? DIGI_POT_MAX : val;
     i2cPots.write(potValue, pot_pin);

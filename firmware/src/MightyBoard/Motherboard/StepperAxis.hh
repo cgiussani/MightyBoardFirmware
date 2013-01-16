@@ -256,15 +256,15 @@ FORCE_INLINE void stepperAxis_dda_step(uint8_t ind)
 #ifdef JKN_ADVANCE
                	if ( DDA_IND.eAxis ) {
 #ifndef SIMULATOR
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Warray-bounds"
+//#pragma GCC diagnostic push
+//#pragma GCC diagnostic ignored "-Warray-bounds"
 #endif
 			//This generates a warning: array subscript is below array bounds [-Warray-bounds]
 			//However we override this warning because anything below A_AXIS can never be
 			//an eAxis, and to test would require extra cycles and we don't need to
 			e_steps[ind-A_AXIS] += DDA_IND.direction;
 #ifndef SIMULATOR
-#pragma GCC diagnostic pop
+//#pragma GCC diagnostic pop
 #endif
 		}
 		else
