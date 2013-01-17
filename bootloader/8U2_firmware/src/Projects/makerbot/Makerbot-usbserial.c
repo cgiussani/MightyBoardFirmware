@@ -97,8 +97,17 @@ int main(void)
 			
 			USB_Init();
 		}
+		if(bit_is_clear(PINB, 5))
+		{
+			LEDs_TurnOnLEDs(LEDMASK_RX);
+			_delay_ms(1);
+			LEDs_TurnOffLEDs(LEDMASK_RX);
+		}
 		while(USB_IsInitialized)
 		{
+			LEDs_TurnOnLEDs(LEDMASK_TX);
+			_delay_ms(1);
+			LEDs_TurnOffLEDs(LEDMASK_TX);
 			/* Only try to read in bytes from the CDC interface if the transmit buffer is not full */
 			if (!(RingBuffer_IsFull(&USBtoUSART_Buffer)))
 			{
@@ -171,7 +180,7 @@ void SetupHardware(void)
 	AVR_RESET_LINE_PORT |= AVR_RESET_LINE_MASK;
 	AVR_RESET_LINE_DDR  |= AVR_RESET_LINE_MASK;
 
-	DDRB &= ~(1 << PB5);
+	DDRB &= ~(1 << PB5); //Set pin B5 as an input
   
 }
 
