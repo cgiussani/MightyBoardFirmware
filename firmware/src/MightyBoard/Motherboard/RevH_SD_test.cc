@@ -5,32 +5,33 @@ uint8_t cmp_SdFile_to_MemFile(char* filename) {
 
 	bool hasMoreData;
 	uint8_t fileByte; //byte of the SD file to compare
-	uint16_t byteIndex = 1;
+	uint16_t i;
 	uint32_t fileSize;
 
-	sdcard::SdErrorCode result = sdcard::startPlayback(filename);
+	sdcard::SdErrorCode result = sdcard::startFileRead(filename);
 
 	if(result != sdcard::SD_SUCCESS) {
 		return (uint8_t)result;
 	}
 
-	//fileSize = sdcard::getFileSize();
-	//if(fileSize != sizeof(TEST_CMP)){
-	//	return 0x0F;
-	//}
+	if(sdcard::getFileSize() != sizeof(TEST_CMP)){
+		return 0x00;
+	}
 
-	while(hasMoreData == true) {
+    i = 0;
 
-        if(sdcard::playbackHasNext()){
-		    fileByte = sdcard::playbackNext();
-        }
-		if(fileByte != TEST_CMP[byteIndex]) {
-			return byteIndex;
+	do{
+
+		fileByte = sdcard::playbackNext();
+        
+		if(pgm_read_byte(&TEST_CMP[i]) != fileByte)
+        {
+            return 0x00;
 		}
-		byteIndex++;
+		i++;
 
 		hasMoreData = sdcard::playbackHasNext();
-	}
+	}while(hasMoreData);
 
 	return 0xFF;
 

@@ -300,8 +300,9 @@ bool playbackHasNext() {
 }
 
 uint8_t playbackNext() {
+  uint8_t rv = next_byte;
   fetchNextByte();
-  return next_byte;
+  return rv;
 }
 
 SdErrorCode startPlayback(char* filename) {
@@ -317,7 +318,7 @@ SdErrorCode startPlayback(char* filename) {
     return SD_ERR_FILE_NOT_FOUND;
   }
   open_fileSize = fat_get_file_size(file);
-  playing = false;
+  playing = true;
   fetchNextByte();
   return SD_SUCCESS;
 }
@@ -351,7 +352,7 @@ SdErrorCode startFileRead(char* filename) {
     return SD_ERR_FILE_NOT_FOUND;
   }
   open_fileSize = fat_get_file_size(file);
-  //fetchNextByte();
+  fetchNextByte();
   return SD_SUCCESS;
 
 }
