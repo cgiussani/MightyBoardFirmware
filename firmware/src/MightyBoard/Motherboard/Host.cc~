@@ -410,8 +410,7 @@ void handleCmp_SdFile_to_MemFile(const InPacket& from_host, OutPacket& to_host) 
 	returnVal = cmp_SdFile_to_MemFile(filename);
 
 	to_host.append8(returnVal);
-
-    sdcard::finishPlayback();
+    to_host.append8(returnVal);
 }
 
     // pause command response

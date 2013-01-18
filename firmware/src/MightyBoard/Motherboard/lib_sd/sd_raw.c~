@@ -173,6 +173,10 @@ static uint8_t sd_raw_send_command(uint8_t command, uint32_t arg);
 
 SDClockVals clock_val = SD1_MHz;
 
+void sd_set_clock_val(SDClockVals clock_in){
+  clock_val = clock_in;
+}
+
 void set_clock_speed(){
 
   switch(clock_val){
@@ -200,11 +204,6 @@ void set_clock_speed(){
       SPSR |= (1 << SPI2X); /* Doubled Clock Frequency: f_OSC / 32 */
       break;
   }
-}
-
-void sd_set_clock_val(SDClockVals clock_in){
-  clock_val = clock_in;
-  set_clock_speed();
 }
 
 /**

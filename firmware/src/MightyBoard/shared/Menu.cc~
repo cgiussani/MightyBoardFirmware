@@ -2899,7 +2899,7 @@ void InfoMenu::handleSelect(uint8_t index) {
     }
 }
 
-uint8_t sd_clock_val = SD1_MHz;
+uint8_t sd_clock_val = SD8_MHz;
 
 
 SettingsMenu::SettingsMenu() {

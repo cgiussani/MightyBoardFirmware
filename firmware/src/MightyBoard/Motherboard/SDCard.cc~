@@ -317,7 +317,7 @@ SdErrorCode startPlayback(char* filename) {
     return SD_ERR_FILE_NOT_FOUND;
   }
   open_fileSize = fat_get_file_size(file);
-  playing = false;
+  playing = true;
   fetchNextByte();
   return SD_SUCCESS;
 }

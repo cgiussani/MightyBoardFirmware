@@ -5,7 +5,7 @@ uint8_t cmp_SdFile_to_MemFile(char* filename) {
 
 	bool hasMoreData;
 	uint8_t fileByte; //byte of the SD file to compare
-	uint16_t byteIndex = 1;
+	uint16_t byteIndex = 0;
 	uint32_t fileSize;
 
 	sdcard::SdErrorCode result = sdcard::startPlayback(filename);
