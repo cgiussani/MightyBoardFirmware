@@ -256,8 +256,8 @@ void capturePacket(const Packet& packet)
 	if (file == 0) return;
 	// Casting away volatile is OK in this instance; we know where the
 	// data is located and that fat_write_file isn't caching
-	fat_write_file(file, (uint8_t*)packet.getData(), packet.getLength());
-	capturedBytes += packet.getLength();
+	fat_write_file(file, (uint8_t*)packet.getData()+1, (packet.getLength())-1);
+	capturedBytes += (packet.getLength()-1);
 }
 
 

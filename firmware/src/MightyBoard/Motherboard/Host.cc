@@ -221,6 +221,13 @@ void runHostSlice() {
 bool processCommandPacket(const InPacket& from_host, OutPacket& to_host) {
 	if (from_host.getLength() >= 1) {
 		uint8_t command = from_host.read8(0);
+		if (command == 0x06) {
+			if (sdcard::isCapturing()) {
+				sdcard::capturePacket(from_host);
+				to_host.append8(RC_OK);
+				return true;
+			}
+		}
 		if ((command & 0x80) != 0) {
 			// If we're capturing a file to an SD card, we send it to the sdcard module
 			// for processing.
