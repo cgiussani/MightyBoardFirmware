@@ -81,6 +81,25 @@ USB_ClassInfo_CDC_Device_t VirtualSerial_CDC_Interface =
 /** Main program entry point. This routine contains the overall program flow, including initial
  *  setup of all components and the main program loop.
  */
+
+ISR(PCINT1_vect)
+{
+//TODO add debouncing?
+	if(bit_is_clear(PINC, 4)) //USB plugged in
+	{
+		if(!(USB_IsInitialized))
+		{
+			USB_QuickStartup();
+		}	
+	}	
+	if(bit_is_set(PINC, 4))
+	{
+		if(USB_IsInitialized)
+		{
+			USB_QuickShutdown();
+		}	
+	}
+}
 int main(void)
 {
 	SetupHardware();
@@ -92,22 +111,8 @@ int main(void)
 
 	for (;;)
 	{
-		if(bit_is_set(PINB, 5))
-		{
-			
-			USB_Init();
-		}
-		if(bit_is_clear(PINB, 5))
-		{
-			LEDs_TurnOnLEDs(LEDMASK_RX);
-			_delay_ms(1);
-			LEDs_TurnOffLEDs(LEDMASK_RX);
-		}
 		while(USB_IsInitialized)
 		{
-			LEDs_TurnOnLEDs(LEDMASK_TX);
-			_delay_ms(1);
-			LEDs_TurnOffLEDs(LEDMASK_TX);
 			/* Only try to read in bytes from the CDC interface if the transmit buffer is not full */
 			if (!(RingBuffer_IsFull(&USBtoUSART_Buffer)))
 			{
@@ -124,46 +129,46 @@ int main(void)
 			{
 				TIFR0 |= (1 << TOV0);
 
-				if (USARTtoUSB_Buffer.Count) {
-					LEDs_TurnOnLEDs(LEDMASK_TX);
-					PulseMSRemaining.TxLEDPulse = TX_RX_LED_PULSE_MS;
-				}
+				//if (USARTtoUSB_Buffer.Count) {
+				//	LEDs_TurnOnLEDs(LEDMASK_TX);
+				//	PulseMSRemaining.TxLEDPulse = TX_RX_LED_PULSE_MS;
+				//}
 
 				/* Read bytes from the USART receive buffer into the USB IN endpoint */
 				while (BufferCount--)
 				  CDC_Device_SendByte(&VirtualSerial_CDC_Interface, RingBuffer_Remove(&USARTtoUSB_Buffer));
-				  
+			  
 				/* Turn off TX LED(s) once the TX pulse period has elapsed */
-				if (PulseMSRemaining.TxLEDPulse && !(--PulseMSRemaining.TxLEDPulse))
-				  LEDs_TurnOffLEDs(LEDMASK_TX);
+				//if (PulseMSRemaining.TxLEDPulse && !(--PulseMSRemaining.TxLEDPulse))
+				//  LEDs_TurnOffLEDs(LEDMASK_TX);
 
 				/* Turn off RX LED(s) once the RX pulse period has elapsed */
-				if (PulseMSRemaining.RxLEDPulse && !(--PulseMSRemaining.RxLEDPulse))
-				  LEDs_TurnOffLEDs(LEDMASK_RX);
+				//if (PulseMSRemaining.RxLEDPulse && !(--PulseMSRemaining.RxLEDPulse))
+				//  LEDs_TurnOffLEDs(LEDMASK_RX);
 			}
 		
 			/* Load the next byte from the USART transmit buffer into the USART */
 			if (!(RingBuffer_IsEmpty(&USBtoUSART_Buffer))) {
 			  Serial_TxByte(RingBuffer_Remove(&USBtoUSART_Buffer));
-			  	
-			  	LEDs_TurnOnLEDs(LEDMASK_RX);
-				PulseMSRemaining.RxLEDPulse = TX_RX_LED_PULSE_MS;
+		  	
+		  		//LEDs_TurnOnLEDs(LEDMASK_RX);
+			//	PulseMSRemaining.RxLEDPulse = TX_RX_LED_PULSE_MS;
 			}
 		
 			CDC_Device_USBTask(&VirtualSerial_CDC_Interface);
 			USB_USBTask();
-
-			if(bit_is_clear(PINB, 5))
-			{
-				USB_ShutDown();
-			}
-		}
+		}		
 	}
 }
 
 /** Configures the board hardware and chip peripherals for the demo's functionality. */
 void SetupHardware(void)
 {
+	// Setup pin change interrupt
+	PCMSK1 |= (1 << PCINT10);
+	PCICR |= (1 << PCIE1);
+
+	
 	/* Disable watchdog if enabled by bootloader/fuses */
 	MCUSR &= ~(1 << WDRF);
 	wdt_disable();
@@ -171,7 +176,7 @@ void SetupHardware(void)
 	/* Hardware Initialization */
 	Serial_Init(115200, false);
 	LEDs_Init();
-	//USB_Init();
+	USB_Init();
 
 	/* Start the flush timer so that overflows occur rapidly to push received bytes to the USB interface */
 	TCCR0B = (1 << CS02);
@@ -179,8 +184,6 @@ void SetupHardware(void)
 	/* Pull target /RESET line high */
 	AVR_RESET_LINE_PORT |= AVR_RESET_LINE_MASK;
 	AVR_RESET_LINE_DDR  |= AVR_RESET_LINE_MASK;
-
-	DDRB &= ~(1 << PB5); //Set pin B5 as an input
   
 }
 
@@ -287,4 +290,21 @@ void EVENT_CDC_Device_ControLineStateChanged(USB_ClassInfo_CDC_Device_t* const C
 	  AVR_RESET_LINE_PORT |= AVR_RESET_LINE_MASK;
   }
  */
+}
+
+void USB_QuickShutdown(void)
+{
+	USB_Detach();
+	USB_Controller_Disable();
+	USB_CLK_Freeze();
+	USB_IsInitialized = false;
+}
+
+void USB_QuickStartup(void)
+{
+	USB_CLK_Unfreeze();
+	USB_Controller_Enable();
+	USB_Attach();
+	USB_IsInitialized = true;
+	USB_ResetInterface();
 }

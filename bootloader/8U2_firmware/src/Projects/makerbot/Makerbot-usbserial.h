@@ -43,6 +43,7 @@
 		#include <avr/wdt.h>
 		#include <avr/interrupt.h>
 		#include <avr/power.h>
+		#include <util/delay.h>
 
 		#include "Descriptors.h"
 
@@ -76,6 +77,9 @@
 		void EVENT_USB_Device_UnhandledControlRequest(void);
 		
 		void EVENT_CDC_Device_LineEncodingChanged(USB_ClassInfo_CDC_Device_t* const CDCInterfaceInfo);
-		void EVENT_CDC_Device_ControLineStateChanged(USB_ClassInfo_CDC_Device_t* const CDCInterfaceInfo);		
+		void EVENT_CDC_Device_ControLineStateChanged(USB_ClassInfo_CDC_Device_t* const CDCInterfaceInfo);
+		
+		void USB_QuickStartup(void);
+		void USB_QuickShutdown(void);
 
 #endif /* _MAKERBOT_USBSERIAL_H_ */
