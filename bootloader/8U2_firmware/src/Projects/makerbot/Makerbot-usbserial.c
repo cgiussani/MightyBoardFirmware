@@ -84,15 +84,17 @@ USB_ClassInfo_CDC_Device_t VirtualSerial_CDC_Interface =
 
 ISR(PCINT1_vect)
 {
-//TODO add debouncing?
-	if(bit_is_clear(PINC, 4)) //USB plugged in
+
+	bool vbusHi = bit_is_set(PINC, 4);
+
+	if(!(vbusHi)) //USB plugged in
 	{
 		if(!(USB_IsInitialized))
 		{
 			USB_QuickStartup();
 		}	
 	}	
-	if(bit_is_set(PINC, 4))
+	if(vbusHi)
 	{
 		if(USB_IsInitialized)
 		{
