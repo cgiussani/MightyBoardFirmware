@@ -82,23 +82,34 @@ USB_ClassInfo_CDC_Device_t VirtualSerial_CDC_Interface =
  *  setup of all components and the main program loop.
  */
 
+
 ISR(PCINT1_vect)
 {
 
-	bool vbusHi = bit_is_set(PINC, 4);
+	bool vbus_detect = bit_is_clear(PINC, 4); //USB should be active when PIN C4 is low
 
-	if(!(vbusHi)) //USB plugged in
+	if(vbus_detect) //USB plugged in
 	{
 		if(!(USB_IsInitialized))
 		{
-			USB_QuickStartup();
+			USB_PLL_On();
+			while(!(USB_PLL_IsReady()));
+			USB_CLK_Unfreeze();
+			USB_Controller_Enable();
+			USB_Attach();
+			USB_IsInitialized = true;
+			USB_ResetInterface();
 		}	
 	}	
-	if(vbusHi)
+	if(!(vbus_detect))
 	{
 		if(USB_IsInitialized)
 		{
-			USB_QuickShutdown();
+			USB_Detach();
+			USB_Controller_Disable();
+			USB_CLK_Freeze();
+			USB_PLL_Off();
+			USB_IsInitialized = false;
 		}	
 	}
 }
@@ -113,6 +124,14 @@ int main(void)
 
 	for (;;)
 	{
+		if(bit_is_set(PINC, 4) & USB_IsInitialized)
+		{
+			USB_Detach();
+			USB_Controller_Disable();
+			USB_CLK_Freeze();
+			USB_PLL_Off();
+			USB_IsInitialized = false;
+		}
 		while(USB_IsInitialized)
 		{
 			/* Only try to read in bytes from the CDC interface if the transmit buffer is not full */
@@ -122,7 +141,7 @@ int main(void)
 
 				/* Read bytes from the USB OUT endpoint into the USART transmit buffer */
 				if (!(ReceivedByte < 0))
-				  RingBuffer_Insert(&USBtoUSART_Buffer, ReceivedByte);
+					RingBuffer_Insert(&USBtoUSART_Buffer, ReceivedByte);
 			}
 		
 			/* Check if the UART receive buffer flush timer has expired or the buffer is nearly full */
@@ -138,7 +157,7 @@ int main(void)
 
 				/* Read bytes from the USART receive buffer into the USB IN endpoint */
 				while (BufferCount--)
-				  CDC_Device_SendByte(&VirtualSerial_CDC_Interface, RingBuffer_Remove(&USARTtoUSB_Buffer));
+					CDC_Device_SendByte(&VirtualSerial_CDC_Interface, RingBuffer_Remove(&USARTtoUSB_Buffer));
 			  
 				/* Turn off TX LED(s) once the TX pulse period has elapsed */
 				//if (PulseMSRemaining.TxLEDPulse && !(--PulseMSRemaining.TxLEDPulse))
@@ -151,7 +170,7 @@ int main(void)
 		
 			/* Load the next byte from the USART transmit buffer into the USART */
 			if (!(RingBuffer_IsEmpty(&USBtoUSART_Buffer))) {
-			  Serial_TxByte(RingBuffer_Remove(&USBtoUSART_Buffer));
+				Serial_TxByte(RingBuffer_Remove(&USBtoUSART_Buffer));
 		  	
 		  		//LEDs_TurnOnLEDs(LEDMASK_RX);
 			//	PulseMSRemaining.RxLEDPulse = TX_RX_LED_PULSE_MS;
@@ -159,7 +178,7 @@ int main(void)
 		
 			CDC_Device_USBTask(&VirtualSerial_CDC_Interface);
 			USB_USBTask();
-		}		
+		}			
 	}
 }
 
@@ -169,8 +188,10 @@ void SetupHardware(void)
 	// Setup pin change interrupt
 	PCMSK1 |= (1 << PCINT10);
 	PCICR |= (1 << PCIE1);
-
 	
+	DDRC &= ~(1 << DDC4);
+	PORTC |= (1 << PORTC4);
+
 	/* Disable watchdog if enabled by bootloader/fuses */
 	MCUSR &= ~(1 << WDRF);
 	wdt_disable();
@@ -292,21 +313,4 @@ void EVENT_CDC_Device_ControLineStateChanged(USB_ClassInfo_CDC_Device_t* const C
 	  AVR_RESET_LINE_PORT |= AVR_RESET_LINE_MASK;
   }
  */
-}
-
-void USB_QuickShutdown(void)
-{
-	USB_Detach();
-	USB_Controller_Disable();
-	USB_CLK_Freeze();
-	USB_IsInitialized = false;
-}
-
-void USB_QuickStartup(void)
-{
-	USB_CLK_Unfreeze();
-	USB_Controller_Enable();
-	USB_Attach();
-	USB_IsInitialized = true;
-	USB_ResetInterface();
 }
