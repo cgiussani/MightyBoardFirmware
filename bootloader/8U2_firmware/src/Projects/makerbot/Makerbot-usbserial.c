@@ -150,30 +150,30 @@ int main(void)
 			{
 				TIFR0 |= (1 << TOV0);
 
-				//if (USARTtoUSB_Buffer.Count) {
-				//	LEDs_TurnOnLEDs(LEDMASK_TX);
-				//	PulseMSRemaining.TxLEDPulse = TX_RX_LED_PULSE_MS;
-				//}
+				if (USARTtoUSB_Buffer.Count) {
+					LEDs_TurnOnLEDs(LEDMASK_TX);
+					PulseMSRemaining.TxLEDPulse = TX_RX_LED_PULSE_MS;
+				}
 
 				/* Read bytes from the USART receive buffer into the USB IN endpoint */
 				while (BufferCount--)
 					CDC_Device_SendByte(&VirtualSerial_CDC_Interface, RingBuffer_Remove(&USARTtoUSB_Buffer));
 			  
 				/* Turn off TX LED(s) once the TX pulse period has elapsed */
-				//if (PulseMSRemaining.TxLEDPulse && !(--PulseMSRemaining.TxLEDPulse))
-				//  LEDs_TurnOffLEDs(LEDMASK_TX);
+				if (PulseMSRemaining.TxLEDPulse && !(--PulseMSRemaining.TxLEDPulse))
+				  LEDs_TurnOffLEDs(LEDMASK_TX);
 
 				/* Turn off RX LED(s) once the RX pulse period has elapsed */
-				//if (PulseMSRemaining.RxLEDPulse && !(--PulseMSRemaining.RxLEDPulse))
-				//  LEDs_TurnOffLEDs(LEDMASK_RX);
+				if (PulseMSRemaining.RxLEDPulse && !(--PulseMSRemaining.RxLEDPulse))
+				  LEDs_TurnOffLEDs(LEDMASK_RX);
 			}
 		
 			/* Load the next byte from the USART transmit buffer into the USART */
 			if (!(RingBuffer_IsEmpty(&USBtoUSART_Buffer))) {
 				Serial_TxByte(RingBuffer_Remove(&USBtoUSART_Buffer));
 		  	
-		  		//LEDs_TurnOnLEDs(LEDMASK_RX);
-			//	PulseMSRemaining.RxLEDPulse = TX_RX_LED_PULSE_MS;
+		  		LEDs_TurnOnLEDs(LEDMASK_RX);
+				PulseMSRemaining.RxLEDPulse = TX_RX_LED_PULSE_MS;
 			}
 		
 			CDC_Device_USBTask(&VirtualSerial_CDC_Interface);
