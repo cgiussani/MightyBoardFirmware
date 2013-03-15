@@ -83,7 +83,7 @@ USB_ClassInfo_CDC_Device_t VirtualSerial_CDC_Interface =
  */
 
 
-ISR(PCINT1_vect)
+ISR(PCINT1_vect, ISR_NAKED)
 {
 
 	bool vbus_detect = bit_is_clear(PINC, 4); //USB should be active when PIN C4 is low
@@ -112,6 +112,7 @@ ISR(PCINT1_vect)
 			USB_IsInitialized = false;
 		}	
 	}
+	reti();
 }
 int main(void)
 {
