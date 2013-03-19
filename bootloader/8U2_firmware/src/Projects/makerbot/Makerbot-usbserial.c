@@ -123,16 +123,17 @@ int main(void)
 
 	sei();
 
+	if(bit_is_set(PINC, 4) && USB_IsInitialized)
+	{
+		USB_Detach();
+		USB_Controller_Disable();
+		USB_CLK_Freeze();
+		USB_PLL_Off();
+		USB_IsInitialized = false;
+	}
+
 	for (;;)
 	{
-		if(bit_is_set(PINC, 4) & USB_IsInitialized)
-		{
-			USB_Detach();
-			USB_Controller_Disable();
-			USB_CLK_Freeze();
-			USB_PLL_Off();
-			USB_IsInitialized = false;
-		}
 		while(USB_IsInitialized)
 		{
 			/* Only try to read in bytes from the CDC interface if the transmit buffer is not full */
