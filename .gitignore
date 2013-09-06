@@ -10,3 +10,4 @@ documentation
 *.swp
 *.DS_Store
 *.lst
+.svn

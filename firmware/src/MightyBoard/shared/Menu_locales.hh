@@ -5,6 +5,7 @@
 #include <string.h>
 
 #define FRENCH 1
+#define ITALIAN 1
 
 #ifdef PROGMEM 
 # undef PROGMEM 
@@ -13,8 +14,6 @@
 
 #pragma GCC diagnostic ignored "-Wunused-variable"
 
-static PROGMEM unsigned char ON_MSG[] =					"ON ";
-static PROGMEM unsigned char OFF_MSG[] =				"OFF";
 static PROGMEM unsigned char NA2_MSG[] =				"NA ";
 
 static PROGMEM unsigned char ON_CELCIUS_MSG[] =				"/   C";
@@ -26,11 +25,14 @@ static PROGMEM unsigned char BLANK_CHAR_MSG[] =				" ";
 static PROGMEM unsigned char CLEAR_MSG[] =				"                    ";
 static PROGMEM unsigned char BLANKLINE_MSG[] =				"                ";
 
-#ifdef LOCALE_FR
-# include "Menu.FR.hh"
+#ifdef LOCALE_IT
+# include "Menu.IT.hh"
 #else // Use US ENGLISH as default
 
 #ifdef MODEL_REPLICATOR
+static PROGMEM unsigned char ON_MSG[] =                                 "ON ";
+static PROGMEM unsigned char OFF_MSG[] =                                "OFF";
+
 static PROGMEM unsigned char SPLASH1_SINGLE_MSG[] = 			"  The Replicator    ";
 static PROGMEM unsigned char SPLASH1_DUAL_MSG[] =			"  The Replicator    ";
 static PROGMEM unsigned char SPLASH2_MSG[] =				"    ----------      ";

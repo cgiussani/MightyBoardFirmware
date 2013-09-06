@@ -307,7 +307,7 @@ ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
 #elif SPECIFIC_REP2X
   eeprom_write_block("Replicator 2X", (uint8_t*)eeprom_offsets::MACHINE_NAME,16);
 #elif MODEL_REPLICATOR	
-  eeprom_write_block("The Replicator", (uint8_t*)eeprom_offsets::MACHINE_NAME,16);
+  eeprom_write_block("Sharebot Pro", (uint8_t*)eeprom_offsets::MACHINE_NAME,16);
 #elif MODEL_REPLICATOR2
   if(isSingleTool()){
     eeprom_write_block("Replicator 2", (uint8_t*)eeprom_offsets::MACHINE_NAME,16);
