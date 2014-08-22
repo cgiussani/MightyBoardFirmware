@@ -277,6 +277,10 @@ static PROGMEM unsigned char ERROR_STREAM_INCOMPATIBLE_REP1[]  = "Attenzione:Sta
 static PROGMEM unsigned char ERROR_STREAM_VERSION[]            = "Non e' la versione   x3g ottimale. Per  aiuto: sharebot.it   ";
 static PROGMEM unsigned char ERROR_BOT_TYPE_REP1[]             = "Sono una ShareBot   Pro.  Questo file e'per un altra stamp. Vedi:www.sharebot.it";
 static PROGMEM unsigned char ERROR_BOT_TYPE_REP2[]             = "Sono una ShareBot   Pro.  Questo file e'per un altra stamp. Vedi:www.sharebot.it";
+static PROGMEM unsigned char ERROR_BOT_TYPE[] =  "Sono una Sharebot   " \
+                                                 "Pro.  Questo file e'" \
+                                                 "per un'altra stamp. " \
+                                                 "Vedi:www.sharebot.it";
 static PROGMEM unsigned char ERROR_SRAM[]                      = "L'utilizzo della    SRAM supera il      limite di 8k ";
 static PROGMEM unsigned char ERROR_SD_CARD_REMOVED[]           = "SD Card Rimossa";
 static PROGMEM unsigned char ERROR_PLATFORM_HEATING_TIMEOUT[]  = "timed out in attesa di scaldare il      piano.";
